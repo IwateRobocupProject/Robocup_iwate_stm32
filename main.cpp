@@ -47,7 +47,7 @@ int PID(float kp,float ki,float kd,int target,int degree);
 /*****************************************************************/
 
 int main(){
-
+	int ja, hou, kyori, byou, kaku, umu;
 //**************************************************************//
 ////////////////////////initialize setting////////////////////////
 //**************************************************************//
@@ -72,12 +72,29 @@ int main(){
 ////////////////Play mode(you can write this statement)////////////
 //***************************************************************//
         while(sw_start == 1){
-
-
             imu.get_Euler_Angles(&euler_angles);
             a = PID(0.4,0.25,0.025,0,euler_angles.h);
-
             motor.omniWheels(0,0,a);
+            imu.get_Euler_Angles(&euler_angles);
+                      ja = euler_angles.h;
+                      byou = 1;
+                      kaku = ball.degree();
+                      kyori = ball.distance();
+                      umu = hold_check.read();
+                      if(umu == 1){
+                        hou = mawari(kaku,kyori);
+                      }else{
+                    	  hou = 0;
+                      }
+                      if(ja <= 180){
+                    	  motor.omniWheels(hou,50,-1*ja/2);
+                                wait_ms(byou);
+                             }
+                      else{
+                    	  motor.omniWheels(hou,50,-1*(ja-360)/2);
+                    	  wait_ms(byou);
+                          }
+
         }
         
         
@@ -158,3 +175,18 @@ int PID(float kp,float ki,float kd,int target,int degree)
 	return re;
 }
 
+int mawari(int kaku,int kyori){
+	int hou;
+	if(kyori <= 500){
+	 if((-90 <= kaku) && (kaku <= 90)) {
+	        	  hou = 2 * kaku;
+	           }else if(kaku <= -180){
+	        	  hou = kaku - 90;
+	           }else{
+	              hou = kaku + 90;
+	           }
+	}else{
+	              hou = kaku;
+                                        }
+	 return hou;
+}
