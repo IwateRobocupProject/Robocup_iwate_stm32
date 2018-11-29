@@ -47,7 +47,6 @@ int mawari(int kaku,int kyori);
 /*****************************************************************/
 
 int main(){
-	int ja, hou, kyori, byou, kaku, umu, kakudo;
 //**************************************************************//
 ////////////////////////initialize setting////////////////////////
 //**************************************************************//
@@ -66,14 +65,20 @@ int main(){
     int init_degree = euler_angles.h;
     imu.reset();
     motor.omniWheels(0,0,0);
-    int a;
+
+    /*Variable*/
+    int turn, hou, kyori, kaku, umu, kakudo;
+
+
     while(1){
 //***************************************************************//
 ////////////////Play mode(you can write this statement)////////////
 //***************************************************************//
         while(sw_start == 1){
             imu.get_Euler_Angles(&euler_angles);
-            a = PID(0.4,0.25,0.025,0,euler_angles.h);
+            turn = PID(0.4,0.25,0.025,0,euler_angles.h);
+
+            /*Line control*/
             kakudo = line.direction();
             if (kakudo != -999){
 
@@ -92,23 +97,23 @@ int main(){
             	}
             	motor.omniWheels(kakudo,50,0);
             }
-            else{
-            byou = 1;
-            kaku = ball.degree();
-            kyori = ball.distance();
-            umu = hold_check.read();
-            if(umu == 1){
-            	hou = mawari(kaku,kyori);
-            }else{
-                hou = 0;
-            }
-            if(kyori >= 900){
-            	motor.omniWheels(0,0,a);
-            }
-            else{
-            	motor.omniWheels(hou,50,a);
-            }
-            }
+
+            /*Ball follow control*/
+			else {
+				kaku = ball.degree();
+				kyori = ball.distance();
+				umu = hold_check.read();
+				if (umu == 1) {
+					hou = mawari(kaku, kyori);
+				} else {
+					hou = 0;
+				}
+				if (kyori >= 1000) {
+					motor.omniWheels(0, 0, turn);
+				} else {
+					motor.omniWheels(hou, 50, turn);
+				}
+			}
         }
         
         
@@ -178,7 +183,7 @@ int PID(float kp,float ki,float kd,int target,int degree)
 	OP = P;
 	re = -1 * (kp * P + ki * I + kd * D);
 
-	if (-3 <= degree <= 3 && degree == target){
+	if (degree >= -3 && degree <= 3){
 		I = 0;
 	}
 	if (re >= 50){
