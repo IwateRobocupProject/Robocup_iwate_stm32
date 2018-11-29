@@ -73,6 +73,7 @@ int main(){
 //***************************************************************//
         while(sw_start == 1){
 
+
             imu.get_Euler_Angles(&euler_angles);
             a = PID(0.4,0.25,0.025,0,euler_angles.h);
 
