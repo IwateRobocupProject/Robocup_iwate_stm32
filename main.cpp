@@ -189,18 +189,18 @@ int PID(float kp,float ki,float kd,int target,int degree)
 	return re;
 }
 
-int mawari(int kaku,int kyori){
+int mawari(int kaku, int kyori) {
 	int hou;
-	if(kyori <= 500){
-	 if((-90 <= kaku) && (kaku <= 90)) {
-	        	  hou = 2 * kaku;
-	           }else if(kaku <= -180){
-	        	  hou = kaku - 90;
-	           }else{
-	              hou = kaku + 90;
-	           }
-	}else{
-	              hou = kaku;
-                                        }
-	 return hou;
+	if (kyori <= 500) {
+		if ((-90 <= kaku) && (kaku <= 90)) {
+			hou = 2 * kaku;
+		} else if (kaku <= -180) {
+			hou = kaku - 90;
+		} else {
+			hou = kaku + 90;
+		}
+	} else {
+		hou = kaku;
+	}
+	return hou;
 }
