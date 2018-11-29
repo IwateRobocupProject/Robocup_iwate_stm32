@@ -81,21 +81,15 @@ int main(){
             /*Line control*/
             kakudo = line.direction();
             if (kakudo != -999){
-
-            	if (kakudo == 999)
-            	{
-            	motor.omniWheels(0,0,0);
-            	wait(0.1);
-            	}
-            	else if (kakudo <= 179)
-            	{
-						kakudo = kakudo + 180;
-            	}
-            	else if (kakudo >= 180)
-            	{
-            			kakudo = kakudo - 180;
-            	}
-            	motor.omniWheels(kakudo,50,0);
+				if (kakudo == 999) {
+					motor.omniWheels(0, 0, 0);
+					wait(0.1);
+				} else if (kakudo <= 179) {
+					kakudo = kakudo + 180;
+				} else if (kakudo >= 180) {
+					kakudo = kakudo - 180;
+				}
+				motor.omniWheels(kakudo, 50, 0);
             }
 
             /*Ball follow control*/
