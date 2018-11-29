@@ -55,7 +55,7 @@ int main(){
     uss_left.Set_Speed_of_Sound(32);//(cm/ms)
     
     /*motor pwm frequency set*/
-    motor.setPwmPeriod(0.03);
+    motor.setPwmPeriod(0.01);
 
     /*change Mode IMU,COMPASS,M4G,NDOF_FMC_OFF,NDOF*/
     imu.reset();
