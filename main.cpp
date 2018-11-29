@@ -194,7 +194,7 @@ int mawari(int kaku, int kyori) {
 	if (kyori <= 500) {
 		if ((-90 <= kaku) && (kaku <= 90)) {
 			hou = 2 * kaku;
-		} else if (kaku <= -180) {
+		} else if (kaku <= 0) {
 			hou = kaku - 90;
 		} else {
 			hou = kaku + 90;
