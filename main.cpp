@@ -74,27 +74,32 @@ int main(){
         while(sw_start == 1){
             imu.get_Euler_Angles(&euler_angles);
             a = PID(0.4,0.25,0.025,0,euler_angles.h);
-            motor.omniWheels(0,0,a);
-            imu.get_Euler_Angles(&euler_angles);
-                      ja = euler_angles.h;
-                      byou = 1;
-                      kaku = ball.degree();
-                      kyori = ball.distance();
-                      umu = hold_check.read();
-                      if(umu == 1){
-                        hou = mawari(kaku,kyori);
-                      }else{
-                    	  hou = 0;
-                      }
-                      if(ja <= 180){
-                    	  motor.omniWheels(hou,50,-1*ja/2);
-                                wait_ms(byou);
-                             }
-                      else{
-                    	  motor.omniWheels(hou,50,-1*(ja-360)/2);
-                    	  wait_ms(byou);
-                          }
+            if (line.direction() != -999){
+            	if (line.direction() == 999)
+            	{
+            	motor.omniWheels(0,0,0);
+            	wait(0.1);
+            	}
+            	else{
+            		if (line.direction() <= 179){
+            			line.direction() == line.direction() + 180;
+            		}
+            		else if (line.direction() >= 180){
+            			line.direction() == line.direction() - 180;
+            		}
+            	}
+            }
 
+            byou = 1;
+            kaku = ball.degree();
+            kyori = ball.distance();
+            umu = hold_check.read();
+            if(umu == 1){
+            	hou = mawari(kaku,kyori);
+            }else{
+                hou = 0;
+            }
+            motor.omniWheels(hou,50,a);
         }
         
         
