@@ -8,8 +8,6 @@
 //TerminalDisplay(TeraTerm)
 Serial pc(SERIAL_TX,SERIAL_RX);
 
-
-
 //UltraSonicSensor
 Ping uss_left(PA_0);
 Ping uss_right(PB_13);
@@ -42,7 +40,7 @@ DigitalIn swdebug(PC_10);//reserve switch(non connect)
 DigitalIn swkick(PC_12);//reserve switch(non connect)
 
 //declear prototype (function list)
-
+int PID(float kp,float ki,float kd,int target,int degree);
 
 /*****************************************************************/
 /**********************main function******************************/
@@ -68,14 +66,17 @@ int main(){
     int init_degree = euler_angles.h;
     imu.reset();
     motor.omniWheels(0,0,0);
-
+    int a;
     while(1){
 //***************************************************************//
 ////////////////Play mode(you can write this statement)////////////
 //***************************************************************//
         while(sw_start == 1){
-            motor.omniWheels(0,100,0);
-            
+
+            imu.get_Euler_Angles(&euler_angles);
+            a = PID(0.4,0.25,0.025,0,euler_angles.h);
+
+            motor.omniWheels(0,0,a);
         }
         
         
@@ -131,4 +132,28 @@ int main(){
     return 0;
 }
 
+int PID(float kp,float ki,float kd,int target,int degree)
+{
+	static float P = 0, OP = 0, I = 0, D = 0, re = 0;
+	if (degree >= 180){
+		degree = degree - 360;
+	}
+
+	P = degree - target;
+	D = (P - OP) / 0.001;
+	I += P * 0.001;
+	OP = P;
+	re = -1 * (kp * P + ki * I + kd * D);
+
+	if (-3 <= degree <= 3 && degree == target){
+		I = 0;
+	}
+	if (re >= 50){
+		re = 50;
+	}else if (re <= -50){
+		re = -50;
+	}
+
+	return re;
+}
 
