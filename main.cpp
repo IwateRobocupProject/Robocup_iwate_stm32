@@ -55,7 +55,7 @@ int main(){
     uss_left.Set_Speed_of_Sound(32);//(cm/ms)
     
     /*motor pwm frequency set*/
-    motor.setPwmPeriod(0.01);
+    motor.setPwmPeriod(0.03);
 
     /*change Mode IMU,COMPASS,M4G,NDOF_FMC_OFF,NDOF*/
     imu.reset();
@@ -89,7 +89,7 @@ int main(){
 				} else if (kakudo >= 180) {
 					kakudo = kakudo - 180;
 				}
-				motor.omniWheels(kakudo, 50, 0);
+				motor.omniWheels(kakudo, 80, 0);
             }
 
             /*Ball follow control*/
