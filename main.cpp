@@ -71,48 +71,56 @@ int main(){
 //***************************************************************//
 ////////////////Play mode(you can write this statement)////////////
 //***************************************************************//
-        while(sw_start == 1){
-            imu.get_Euler_Angles(&euler_angles);
-            a = PID(0.4,0.25,0.025,0,euler_angles.h);
-            kakudo = line.direction();
-            if (kakudo != -999){
+		while (sw_start == 1) {
+			imu.get_Euler_Angles(&euler_angles);
+			a = PID(0.4, 0.25, 0.025, 0, euler_angles.h);
+			kakudo = line.direction();
+			if (kakudo != -999) {
 
-            	if (kakudo == 999)
-            	{
-            	motor.omniWheels(0,0,0);
-            	wait(0.1);
-            	}
-            	else if (kakudo <= 179)
-            	{
-						kakudo = kakudo + 180;
-            	}
-            	else if (kakudo >= 180)
-            	{
-            			kakudo = kakudo - 180;
-            	}
-            	motor.omniWheels(kakudo,50,0);
-            }
-            else{
-            byou = 1;
-            kaku = ball.degree();
-            kyori = ball.distance();
-            umu = hold_check.read();
-            if(umu == 1){
-            	hou = mawari(kaku,kyori);
-            }else{
-                hou = 0;
-            }
-            if(kyori >= 900){
-            	motor.omniWheels(0,0,a);
-            }
-            else{
-            	motor.omniWheels(hou,50,a);
-            }
-            }
-        }
-        
-        
-        
+				/*if (kakudo == 999)
+				 {
+				 motor.omniWheels(0,0,0);
+				 wait(0.005);
+
+				 }
+
+
+				 else*/if (kakudo <= 179) {
+					kakudo = kakudo + 180;
+
+				} else if (kakudo >= 180) {
+					kakudo = kakudo - 180;
+				}
+				if (kakudo != 999) {
+					/*if (135 <= kakudo && kakudo <= 225) {
+						motor.omniWheels(kakudo, 75, 0);
+						wait(0.1);
+					} else{*/
+
+					motor.omniWheels(kakudo, 75, 0);
+					wait(0.1);
+					}
+				else{
+					motor.omniWheels(180, 75, 0);
+				}
+				//}
+			} else {
+				byou = 1;
+				kaku = ball.degree();
+				kyori = ball.distance();
+				umu = hold_check.read();
+				if (umu == 1) {
+					hou = mawari(kaku, kyori);
+				} else {
+					hou = 0;
+				}
+				if (kyori >= 900) {
+					motor.omniWheels(0, 0, a);
+				} else {
+					motor.omniWheels(hou, 60, a);
+				}
+			}
+		}
 //***************************************************************//
 ////////////////////////Gyro reset mode////////////////////////////
 //***************************************************************//
@@ -178,7 +186,7 @@ int PID(float kp,float ki,float kd,int target,int degree)
 	OP = P;
 	re = -1 * (kp * P + ki * I + kd * D);
 
-	if (-3 <= degree <= 3 && degree == target){
+	if (-3 <= degree && degree <= 3 && degree == target){
 		I = 0;
 	}
 	if (re >= 50){
@@ -190,18 +198,18 @@ int PID(float kp,float ki,float kd,int target,int degree)
 	return re;
 }
 
-int mawari(int kaku,int kyori){
+int mawari(int kaku,int kyori) {
 	int hou;
-	if(kyori <= 500){
-	 if((-90 <= kaku) && (kaku <= 90)) {
-	        	  hou = 2 * kaku;
-	           }else if(kaku <= -180){
-	        	  hou = kaku - 90;
-	           }else{
-	              hou = kaku + 90;
-	           }
-	}else{
-	              hou = kaku;
-                                        }
-	 return hou;
+	if(kyori <= 500) {
+		if((-90 <= kaku) && (kaku <= 90)) {
+			hou = 2 * kaku;
+		} else if(kaku <= 0) {
+			hou = kaku - 90;
+		} else {
+			hou = kaku + 90;
+		}
+	} else {
+		hou = kaku;
+	}
+	return hou;
 }
