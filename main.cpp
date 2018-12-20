@@ -11,6 +11,7 @@ Serial pc(SERIAL_TX,SERIAL_RX);
 //UltraSonicSensor
 Ping uss_left(PA_0);
 Ping uss_right(PB_13);
+Ping uss_back(PC_2);
 
 //BallSensor
 Ballsensor ball(A3,A2);
@@ -42,12 +43,15 @@ DigitalIn swkick(PC_12);//reserve switch(non connect)
 //declear prototype (function list)
 int PID(float kp,float ki,float kd,int target,int degree);
 int mawari(int kaku,int kyori);
+void timerreset();
 /*****************************************************************/
 /**********************main function******************************/
 /*****************************************************************/
 
 int main(){
-	int ja, hou, kyori, byou, kaku, umu, kakudo;
+	const float PI = 3.1415926535;
+	int ja, hou, kyori, byou, kaku, umu, kakudo, range, range2, range3;
+	double x, y;
 //**************************************************************//
 ////////////////////////initialize setting////////////////////////
 //**************************************************************//
@@ -112,12 +116,53 @@ int main(){
 				if (umu == 1) {
 					hou = mawari(kaku, kyori);
 				} else {
-					hou = 0;
+					timerreset();
+
+					if (time1.read() >= 0.04)
+					{
+						range = uss_right.Read_cm();
+						range2 = uss_left.Read_cm();
+						range3 = uss_back.Read_cm();
+						timerreset();
+
+						if (range + range2 >= 166)
+						{
+
+
+							if (range < range2)
+							{
+								x = (range2 + 8) * cos(360 - hou) - 91;
+								y = 213 - (cos(360 - hou) * (range3 + 8));
+								hou = 90 - ((180 / PI) * atan(y / x));
+							}else if (hou <= 45)
+							{
+								x = (range2 + 8) * cos(hou) - 91;
+								y = 213 - ((range3 + 8) * cos(hou));
+								hou = 90 - ((180 / PI) * atan(y / x));
+							}
+						}else if (range > range2)
+						{
+							if (hou <= 45)
+							{
+								x = (range + 8) * cos(hou) - 91;
+								y = 213 - ((range3 + 8) * cos(hou));
+								hou = ((180 / PI) * atan(y / x)) - 90;
+							}else if (hou >= 315)
+							{
+								x = (range + 8) * cos(360 - hou) - 91;
+								y = 213 - ((range3 + 8) * cos(360 - hou));
+								hou = ((180 / PI) * atan(y / x)) - 90;
+							}
+						}else
+						{
+							hou = 0;
+						}
+					}
 				}
 				if (kyori >= 900) {
 					motor.omniWheels(0, 0, a);
 				} else {
-					motor.omniWheels(hou, 60, a);
+					motor.omniWheels(0, 40, a);
 				}
 			}
 		}
@@ -154,10 +199,11 @@ int main(){
                     pc.printf("Hold   sensor: %d \r\n",hold_check.read());
                     uss_left.Send();
                     uss_right.Send();
+                    uss_back.Send();
                     wait_ms(40);
                     pc.printf("USS      left: %d cm\r\n",uss_left.Read_cm());
                     pc.printf("USS     right: %d cm\r\n",uss_right.Read_cm());
-                
+                    pc.printf("USS     back: %d cm\r\n",uss_back.Read_cm());
                     wait_ms(40);
                     pc.printf("\f");
                 }
@@ -213,3 +259,12 @@ int mawari(int kaku,int kyori) {
 	}
 	return hou;
 }
+
+void timerreset(){
+	uss_right.Send();
+	uss_left.Send();
+	uss_back.Send();
+	time1.reset();
+	time1.start();
+}
+
