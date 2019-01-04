@@ -49,9 +49,12 @@ void timerreset();
 /*****************************************************************/
 
 int main(){
+<<<<<<< HEAD
 	const float PI = 3.1415926535;
 	int ja, hou, kyori, byou, kaku, umu, kakudo, range, range2, range3;
 	double x, y;
+=======
+>>>>>>> 3e7f2c6b49ccb0223d807a58bc9053d011c9c380
 //**************************************************************//
 ////////////////////////initialize setting////////////////////////
 //**************************************************************//
@@ -70,11 +73,16 @@ int main(){
     int init_degree = euler_angles.h;
     imu.reset();
     motor.omniWheels(0,0,0);
-    int a;
+
+    /*Variable*/
+    int turn, hou, kyori, kaku, umu, kakudo;
+
+
     while(1){
 //***************************************************************//
 ////////////////Play mode(you can write this statement)////////////
 //***************************************************************//
+<<<<<<< HEAD
 		while (sw_start == 1) {
 			imu.get_Euler_Angles(&euler_angles);
 			a = PID(0.4, 0.25, 0.025, 0, euler_angles.h);
@@ -110,12 +118,35 @@ int main(){
 				//}
 			} else {
 				byou = 1;
+=======
+        while(sw_start == 1){
+            imu.get_Euler_Angles(&euler_angles);
+            turn = PID(0.4,0.25,0.025,0,euler_angles.h);
+
+            /*Line control*/
+            kakudo = line.direction();
+            if (kakudo != -999){
+				if (kakudo == 999) {
+					motor.omniWheels(0, 0, 0);
+					wait(0.1);
+				} else if (kakudo <= 179) {
+					kakudo = kakudo + 180;
+				} else if (kakudo >= 180) {
+					kakudo = kakudo - 180;
+				}
+				motor.omniWheels(kakudo, 80, 0);
+            }
+
+            /*Ball follow control*/
+			else {
+>>>>>>> 3e7f2c6b49ccb0223d807a58bc9053d011c9c380
 				kaku = ball.degree();
 				kyori = ball.distance();
 				umu = hold_check.read();
 				if (umu == 1) {
 					hou = mawari(kaku, kyori);
 				} else {
+<<<<<<< HEAD
 					timerreset();
 
 					if (time1.read() >= 0.04)
@@ -166,6 +197,20 @@ int main(){
 				}
 			}
 		}
+=======
+					hou = 0;
+				}
+				if (kyori >= 1000) {
+					motor.omniWheels(0, 0, turn);
+				} else {
+					motor.omniWheels(hou, 50, turn);
+				}
+			}
+        }
+        
+        
+        
+>>>>>>> 3e7f2c6b49ccb0223d807a58bc9053d011c9c380
 //***************************************************************//
 ////////////////////////Gyro reset mode////////////////////////////
 //***************************************************************//
@@ -232,7 +277,11 @@ int PID(float kp,float ki,float kd,int target,int degree)
 	OP = P;
 	re = -1 * (kp * P + ki * I + kd * D);
 
+<<<<<<< HEAD
 	if (-3 <= degree && degree <= 3 && degree == target){
+=======
+	if (degree >= -3 && degree <= 3){
+>>>>>>> 3e7f2c6b49ccb0223d807a58bc9053d011c9c380
 		I = 0;
 	}
 	if (re >= 50){
@@ -244,12 +293,21 @@ int PID(float kp,float ki,float kd,int target,int degree)
 	return re;
 }
 
+<<<<<<< HEAD
 int mawari(int kaku,int kyori) {
 	int hou;
 	if(kyori <= 500) {
 		if((-90 <= kaku) && (kaku <= 90)) {
 			hou = 2 * kaku;
 		} else if(kaku <= 0) {
+=======
+int mawari(int kaku, int kyori) {
+	int hou;
+	if (kyori <= 500) {
+		if ((-90 <= kaku) && (kaku <= 90)) {
+			hou = 2 * kaku;
+		} else if (kaku <= 0) {
+>>>>>>> 3e7f2c6b49ccb0223d807a58bc9053d011c9c380
 			hou = kaku - 90;
 		} else {
 			hou = kaku + 90;
