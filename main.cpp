@@ -11,6 +11,7 @@ Serial pc(SERIAL_TX,SERIAL_RX);
 //UltraSonicSensor
 Ping uss_left(PA_0);
 Ping uss_right(PB_13);
+Ping uss_back(PC_2);
 
 //BallSensor
 Ballsensor ball(A3,A2);
@@ -53,13 +54,14 @@ int main(){
     /*ultra sonic sensor set speed*/
     uss_right.Set_Speed_of_Sound(32);//(cm/ms)
     uss_left.Set_Speed_of_Sound(32);//(cm/ms)
+    uss_back.Set_Speed_of_Sound(32);//(cm/ms)
     
     /*motor pwm frequency set*/
     motor.setPwmPeriod(0.03);
 
     /*change Mode IMU,COMPASS,M4G,NDOF_FMC_OFF,NDOF*/
     imu.reset();
-    imu.change_fusion_mode(MODE_IMU);
+    imu.change_fusion_mode(MODE_NDOF);
     wait_ms(100);
     imu.get_Euler_Angles(&euler_angles);
     int init_degree = euler_angles.h;
@@ -67,7 +69,7 @@ int main(){
     motor.omniWheels(0,0,0);
 
     /*Variable*/
-    int turn, hou, kyori, kaku, umu, kakudo;
+    int rotation, move, distance, degree, direction;
 
 
     while(1){
@@ -76,37 +78,66 @@ int main(){
 //***************************************************************//
         while(sw_start == 1){
             imu.get_Euler_Angles(&euler_angles);
-            turn = PID(0.4,0.25,0.025,0,euler_angles.h);
+            rotation = PID(0.4,0.05,2.5,0,euler_angles.h);
 
             /*Line control*/
-            kakudo = line.direction();
-            if (kakudo != -999){
-				if (kakudo == 999) {
-					motor.omniWheels(hou - 180, 100,0);
-					wait_ms(300);
-				} else if (kakudo <= 179) {
-					kakudo = kakudo + 180;
-				} else if (kakudo >= 180) {
-					kakudo = kakudo - 180;
-				}
-				motor.omniWheels(kakudo,100,0);
-				wait_ms(150);
+            direction = line.direction();
+            if (direction != -999){
+            	int tmp = direction;
+
+            	/*return from line*/
+            	while(direction != -999){
+            		imu.get_Euler_Angles(&euler_angles);
+            		rotation = PID(0.4,0.05,2.5,0,euler_angles.h);
+            		tmp = direction;
+            		if (direction == 999) {
+						motor.omniWheels(0, 0,rotation);
+					}
+					else if(direction == 90){
+						direction = 240;
+					}
+					else if(direction == 270){
+						direction = 120;
+					}
+					else if (direction <= 179) {
+						direction = direction + 180;
+					}
+					else if (direction >= 180) {
+						direction = direction - 180;
+					}
+					motor.omniWheels(direction,80,rotation);
+					direction = line.direction();
+            	}
+            	/*stop*/
+            	if(tmp >= 180){
+            		tmp = tmp - 360;
+            	}
+            	degree = ball.degree();
+            	while((degree > (tmp - 80)) && (degree < (tmp + 80))){
+            		imu.get_Euler_Angles(&euler_angles);
+            		rotation = PID(0.4,0.05,2.5,0,euler_angles.h);
+            		motor.omniWheels(0,0,rotation);
+            		degree = ball.degree();
+            	}
             }
 
             /*Ball follow control*/
 			else {
-				kaku = ball.degree();
-				kyori = ball.distance();
-				umu = hold_check.read();
-				if (umu == 1) {
-					hou = mawari(kaku, kyori);
+				/*get ball degree and distance*/
+				degree = ball.degree();
+				distance = ball.distance();
+
+				if (hold_check.read() == 1) {
+					move = mawari(degree, distance);
 				} else {
-					hou = 0;
+					move = 0;
 				}
-				if (kyori >= 1000) {
-					motor.omniWheels(0, 0, turn);
+
+				if (distance >= 1000) {//ball not found
+					motor.omniWheels(0, 0, rotation);
 				} else {
-					motor.omniWheels(hou, 50, turn);
+					/*Speed control*/
+					motor.omniWheels(move, 60, rotation);
 				}
 			}
         }
@@ -142,13 +173,15 @@ int main(){
                     pc.printf("Gyro   degree: %d \r\n",(int)euler_angles.h);
                     pc.printf("Ball   degree: %d \r\n",ball.degree());
                     pc.printf("Ball distance: %d \r\n",ball.distance());
-                    pc.printf("Line   sensor: %d \r\n",line.direction());
+                    pc.printf("Line   sensor: %d \r",line.direction());
                     pc.printf("Hold   sensor: %d \r\n",hold_check.read());
                     uss_left.Send();
                     uss_right.Send();
+                    uss_back.Send();
                     wait_ms(40);
                     pc.printf("USS      left: %d cm\r\n",uss_left.Read_cm());
                     pc.printf("USS     right: %d cm\r\n",uss_right.Read_cm());
+                    pc.printf("USS     back: %d cm\r\n",uss_back.Read_cm());
                 
                     wait_ms(40);
                     pc.printf("\f");
@@ -178,13 +211,13 @@ int PID(float kp,float ki,float kd,int target,int degree)
 	OP = P;
 	re = -1 * (kp * P + ki * I + kd * D);
 
-	if (degree >= -3 && degree <= 3){
+	if (degree >= -5 && degree <= 5){
 		I = 0;
 	}
-	if (re >= 50){
-		re = 50;
-	}else if (re <= -50){
-		re = -50;
+	if (re >= 60){
+		re = 60;
+	}else if (re <= -60){
+		re = -60;
 	}
 
 	return re;
